@@ -639,12 +639,16 @@ final class Arrays {
         final int[] q;
 
         switch (b.length) {
-            case 1 -> q = Division.div(a, b[0])[0];
-            case 2 -> {
+            case 1:
+                q = Division.div(a, b[0])[0];
+                break;
+            case 2:
                 final long divisor = ((b[0] & LONG) << 32) | (b[1] & LONG);
                 q = Division.div(a, divisor)[0];
-            }
-            default -> q = Division.div(a, b)[0];
+                break;
+            default:
+                q = Division.div(a, b)[0];
+                break;
         }
 
         return q[0] == 0 ? stripLeadingZeroes(q) : q;
@@ -654,12 +658,16 @@ final class Arrays {
         final int[] r;
 
         switch (b.length) {
-            case 1 -> r = Division.div(a, b[0])[1];
-            case 2 -> {
+            case 1:
+                r = Division.div(a, b[0])[1];
+                break;
+            case 2:
                 final long divisor = ((b[0] & LONG) << 32) | (b[1] & LONG);
                 r = Division.div(a, divisor)[1];
-            }
-            default -> r = Division.div(a, b)[1];
+                break;
+            default:
+                r = Division.div(a, b)[1];
+                break;
         }
 
         return r[0] == 0 ? stripLeadingZeroes(r) : r;
@@ -680,12 +688,16 @@ final class Arrays {
         final int[][] qr;
 
         switch (b.length) {
-            case 1 -> qr = Division.div(a, b[0]);
-            case 2 -> {
+            case 1:
+                qr = Division.div(a, b[0]);
+                break;
+            case 2:
                 final long divisor = ((b[0] & LONG) << 32) | (b[1] & LONG);
                 qr = Division.div(a, divisor);
-            }
-            default -> qr = Division.div(a, b);
+                break;
+            default:
+                qr = Division.div(a, b);
+                break;
         }
 
         if (0 < qr[0].length && qr[0][0] == 0)

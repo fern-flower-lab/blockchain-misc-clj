@@ -11,7 +11,7 @@
 
  :provided {:source-paths      ["src-clj"]
             :java-source-paths ["src-java"]
-            :javac-options     ["-source" "11" "-target" "11" "-g:none"]
+            :javac-options     ["-source" "9" "-target" "9" "-g:none"]
             :jar-exclusions    [#"\.java"]}
 
  :aliases  {}}
