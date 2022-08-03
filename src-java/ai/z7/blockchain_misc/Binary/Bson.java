@@ -1,4 +1,4 @@
-package ai.z7.blockchain_misc.binary_utils;
+package ai.z7.blockchain_misc.Binary;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

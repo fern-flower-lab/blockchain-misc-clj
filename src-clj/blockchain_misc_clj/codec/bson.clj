@@ -1,7 +1,7 @@
 (ns blockchain-misc-clj.codec.bson
   (:require [jsonista.core :as j]
             [clojure.string :as str])
-  (:import (ai.z7.blockchain_misc.binary_utils Bson)
+  (:import (ai.z7.blockchain_misc.Binary Bson)
            (potemkin PersistentMapProxy$IMap)
            (clojure.lang PersistentHashMap)))
 
