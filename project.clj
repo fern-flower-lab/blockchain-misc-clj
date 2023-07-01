@@ -3,7 +3,7 @@
   :url "https://github.com/fern-flower-lab/blockchain-misc-clj"
   :license {:name "Built In Project License"
             :url  "https://github.com/fern-flower-lab/blockchain-misc-clj"}
-  :dependencies [[potemkin "0.4.5"]
-                 [metosin/jsonista "0.3.6"]
-                 [com.fasterxml.jackson.core/jackson-databind "2.13.3"]
+  :dependencies [[potemkin "0.4.6"]
+                 [metosin/jsonista "0.3.7"]
+                 [com.fasterxml.jackson.core/jackson-databind "2.15.2"]
                  [de.undercouch/bson4jackson "2.13.1"]])
