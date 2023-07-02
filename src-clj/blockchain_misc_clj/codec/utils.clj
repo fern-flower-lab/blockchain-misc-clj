@@ -1,5 +1,6 @@
 (ns blockchain-misc-clj.codec.utils
-  (:require [clojure.string :as s]))
+  (:require [clojure.string :as s])
+  (:import (ai.z7.blockchain_misc.UInts UInt256)))
 
 (defn byte-count [l]
   (int (Math/ceil (/ (- 64 (Long/numberOfLeadingZeros l)) 8))))
