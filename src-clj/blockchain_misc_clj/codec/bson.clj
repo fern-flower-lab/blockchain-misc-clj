@@ -6,6 +6,10 @@
            (clojure.lang PersistentHashMap)))
 
 (defn encode ^bytes [^PersistentMapProxy$IMap m]
+  (when (nil? m)
+    (throw (IllegalArgumentException. "Input map cannot be nil.")))
+  (when-not (map? m)
+    (throw (IllegalArgumentException. "Input must be a map.")))
   (Bson/encodeObject m))
 
 (defn decode* ^Object [^bytes b]

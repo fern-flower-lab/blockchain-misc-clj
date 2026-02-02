@@ -68,6 +68,8 @@
             (recur (+ i 2))))))))
 
 (defn hex->bytes [s]
+  (when (nil? s)
+    (throw (IllegalArgumentException. "Input string cannot be nil.")))
   (-> (s/replace s "0x" "")
       hex-str->bytes))
 
@@ -85,5 +87,7 @@
     (str (apply str (repeat zeroes "0")) s)))
 
 (defn bytes->hex [bs & [opts]]
+  (when (nil? bs)
+    (throw (IllegalArgumentException. "Input cannot be nil.")))
   (let [strings (->> bs print-hex s/lower-case)]
     (pad (apply str strings) opts)))

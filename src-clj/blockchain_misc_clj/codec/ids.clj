@@ -10,5 +10,9 @@
 
 (def ^:private tuid-comparator (TUID$TUIDComparator.))
 (defn tuid-cmp [^UUID t1 ^UUID t2]
+  (when (nil? t1)
+    (throw (NullPointerException. "First UUID cannot be nil.")))
+  (when (nil? t2)
+    (throw (NullPointerException. "Second UUID cannot be nil.")))
   (.compare tuid-comparator t1 t2))
 

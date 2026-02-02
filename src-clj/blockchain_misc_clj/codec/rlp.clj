@@ -95,6 +95,8 @@
   (<= seq-short (bit-and 0xff (aget bs 0))))
 
 (defn decode [bs]
+  (when (nil? bs)
+    (throw (IllegalArgumentException. "Input byte array cannot be nil.")))
   (let [[start width] (read-bounds bs 0)]
     (when-not (= width 0)
       (let [out (Arrays/copyOfRange bs start (+ start width))]
