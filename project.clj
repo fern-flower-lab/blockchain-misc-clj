@@ -8,6 +8,10 @@
   :test-paths ["test-clj"]
   :javac-options ["-source" "9" "-target" "9" "-g:none"]
   :jar-exclusions [#"\.java"]
-  :dependencies [[metosin/jsonista "0.3.13"]
-                 [com.fasterxml.jackson.core/jackson-databind "2.21.0"]
+  :dependencies [[metosin/jsonista "1.0.0"]
+                 ;; keep jackson-core in lockstep with jackson-databind
+                 [com.fasterxml.jackson.core/jackson-core "2.22.1"]
+                 [com.fasterxml.jackson.core/jackson-databind "2.22.1"]
+                 ;; NOTE: bson4jackson 3.x targets Jackson 3 (tools.jackson) and is
+                 ;; incompatible with jsonista/Jackson 2 — stay on the 2.x line.
                  [de.undercouch/bson4jackson "2.18.0"]])

@@ -46,6 +46,12 @@
 - GitHub Actions CI running the test suite.
 - Regression tests for all of the above.
 
+### Dependencies
+- jsonista 0.3.13 → 1.0.0, jackson-databind 2.21.0 → 2.22.1 (jackson-core
+  pinned in lockstep), Clojure (dev) 1.12.4 → 1.12.5.
+- bson4jackson stays on 2.18.0: the 3.x line targets Jackson 3
+  (`tools.jackson`) and is incompatible with jsonista/Jackson 2.
+
 ## 0.0.5
 
 - Initial public development version.

@@ -1,7 +1,7 @@
 {:dev      [:dev/all #=(eval (leiningen.core.utils/get-os))]
 
  :dev/all  {:global-vars  {*warn-on-reflection* true}
-            :dependencies [[org.clojure/clojure "1.12.4"]]}
+            :dependencies [[org.clojure/clojure "1.12.5"]]}
 
  :linux    {}
  :windows  {}
