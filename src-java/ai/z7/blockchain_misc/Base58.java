@@ -1,6 +1,5 @@
 package ai.z7.blockchain_misc;
 
-import java.io.IOException;
 import java.util.Arrays;
 
 public class Base58 {
@@ -45,7 +44,7 @@ public class Base58 {
         return new String(encoded, outputStart, encoded.length - outputStart);
     }
 
-    public static byte[] decode(String input) throws IOException {
+    public static byte[] decode(String input) {
         if (input.length() == 0) {
             return new byte[0];
         }
@@ -55,7 +54,8 @@ public class Base58 {
             char c = input.charAt(i);
             int digit = c < 128 ? INDEXES[c] : -1;
             if (digit < 0) {
-                throw new IOException();
+                throw new IllegalArgumentException(
+                        "Invalid Base58 character '" + c + "' at position " + i);
             }
             input58[i] = (byte) digit;
         }

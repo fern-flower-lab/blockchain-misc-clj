@@ -8,7 +8,7 @@
   (try (TUID/toTimestamp tuid)
        (catch IllegalArgumentException _ nil)))
 
-(def ^:private tuid-comparator (TUID$TUIDComparator.))
+(def ^:private ^TUID$TUIDComparator tuid-comparator (TUID$TUIDComparator.))
 (defn tuid-cmp [^UUID t1 ^UUID t2]
   (when (nil? t1)
     (throw (NullPointerException. "First UUID cannot be nil.")))

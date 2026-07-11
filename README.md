@@ -7,13 +7,13 @@ Clojure helpers to make blockchain development less painful.
 Add the following dependency to your `project.clj`:
 
 ```clojure
-[ai.z7/blockchain-misc-clj "0.0.5"]
+[ai.z7/blockchain-misc-clj "0.0.6"]
 ```
 
 Or to your `deps.edn`:
 
 ```clojure
-ai.z7/blockchain-misc-clj {:mvn/version "0.0.5"}
+ai.z7/blockchain-misc-clj {:mvn/version "0.0.6"}
 ```
 
 ## Features
@@ -31,9 +31,10 @@ Hex and byte conversion utilities.
 
 ;; Hex conversion
 (hex->bytes "deadbeef")        ; => byte array
-(hex->bytes "0xdeadbeef")      ; => handles 0x prefix
-(bytes->hex (byte-array [1 2])) ; => "102"
+(hex->bytes "0xdeadbeef")      ; => handles 0x (or 0X) prefix
+(bytes->hex (byte-array [1 2])) ; => "0102" (faithful, two chars per byte)
 (bytes->hex (byte-array [1]) {:pad-left 4}) ; => "00000001"
+(bytes->hex 4294967295)        ; => "ffffffff" (numbers render minimally)
 
 ;; Long/bytes conversion
 (long->bytes 256)              ; => byte array [1 0]
@@ -54,11 +55,12 @@ RLP (Recursive Length Prefix) encoding/decoding for Ethereum compatibility.
 ;; Encode various types
 (encode nil)                   ; => empty string encoding
 (encode (byte-array [1 2 3]))  ; => RLP encoded bytes
-(encode "hello")               ; => RLP encoded string
+(encode "hello")               ; => RLP encoded string (UTF-8)
 (encode [(byte-array [1]) (byte-array [2])]) ; => RLP encoded list
 
 ;; Decode
 (decode encoded-bytes)         ; => decoded value or vector
+;; Truncated, non-canonical, or trailing-garbage input throws ex-info.
 
 ;; Check if encoded value is a vector
 (vector? encoded-bytes)        ; => true/false
@@ -155,6 +157,7 @@ Base58 encoding/decoding (Bitcoin-style).
 
 (Base58/encode (.getBytes "Hello"))    ; => "9Ajdvzr"
 (Base58/decode "9Ajdvzr")              ; => byte[]
+;; Invalid characters throw IllegalArgumentException naming the position.
 ```
 
 #### `ai.z7.blockchain_misc.TUID`
@@ -200,7 +203,7 @@ Protocol buffer style primitive encoding.
 ### Running Tests
 
 ```bash
-lein with-profile +provided test
+lein test
 ```
 
 ### Test Coverage

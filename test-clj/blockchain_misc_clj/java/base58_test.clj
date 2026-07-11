@@ -1,7 +1,6 @@
 (ns blockchain-misc-clj.java.base58-test
   (:require [clojure.test :refer [deftest testing is]])
-  (:import (ai.z7.blockchain_misc Base58)
-           (java.io IOException)))
+  (:import (ai.z7.blockchain_misc Base58)))
 
 (deftest base58-roundtrip
   (testing "encode/decode round-trip consistency"
@@ -9,7 +8,7 @@
                      (.getBytes "Hello World")
                      (byte-array [1 2 3 4 5])
                      (byte-array (range 256))]]
-      (doseq [data test-data]
+      (doseq [^bytes data test-data]
         (is (java.util.Arrays/equals data
                                      (Base58/decode (Base58/encode data))))))))
 
@@ -29,12 +28,15 @@
                                    (Base58/decode (Base58/encode data)))))))
 
 (deftest base58-invalid-characters
-  (testing "invalid characters throw IOException"
-    (is (thrown? IOException (Base58/decode "0")))
-    (is (thrown? IOException (Base58/decode "O")))
-    (is (thrown? IOException (Base58/decode "I")))
-    (is (thrown? IOException (Base58/decode "l")))
-    (is (thrown? IOException (Base58/decode "hello!")))))
+  (testing "invalid characters throw IllegalArgumentException"
+    (is (thrown? IllegalArgumentException (Base58/decode "0")))
+    (is (thrown? IllegalArgumentException (Base58/decode "O")))
+    (is (thrown? IllegalArgumentException (Base58/decode "I")))
+    (is (thrown? IllegalArgumentException (Base58/decode "l")))
+    (is (thrown? IllegalArgumentException (Base58/decode "hello!"))))
+  (testing "the error names the offending character and position"
+    (is (thrown-with-msg? IllegalArgumentException #"position 3"
+                          (Base58/decode "abc!")))))
 
 (deftest base58-known-vectors
   (testing "known test vectors (Bitcoin-style)"

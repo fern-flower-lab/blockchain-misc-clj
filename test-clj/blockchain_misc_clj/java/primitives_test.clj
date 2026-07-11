@@ -255,6 +255,29 @@
       (is (= 0 (write-read 0)))
       (is (= 255 (write-read 255))))))
 
+;; EOF / truncation handling
+
+(deftest primitives-eof-handling
+  (let [empty-in #(ByteArrayInputStream. (byte-array 0))]
+    (testing "reads from an exhausted stream throw"
+      (is (thrown? IllegalStateException (Primitives/readBoolean (empty-in))))
+      (is (thrown? IllegalStateException (Primitives/readVarint32 (empty-in))))
+      (is (thrown? IllegalStateException (Primitives/readVarint64 (empty-in))))
+      (is (thrown? IllegalStateException (Primitives/readFixed32 (empty-in))))
+      (is (thrown? IllegalStateException (Primitives/readFixed64 (empty-in))))
+      (is (thrown? IllegalStateException (Primitives/readFloat (empty-in))))
+      (is (thrown? IllegalStateException (Primitives/readDouble (empty-in)))))
+    (testing "truncated input throws instead of returning garbage"
+      (is (thrown? IllegalStateException
+                   (Primitives/readFixed32 (ByteArrayInputStream. (byte-array [1 2])))))
+      (is (thrown? IllegalStateException
+                   (Primitives/readFixed64 (ByteArrayInputStream. (byte-array [1 2 3 4])))))
+      ;; continuation bit set, then EOF
+      (is (thrown? IllegalStateException
+                   (Primitives/readVarint32 (ByteArrayInputStream. (byte-array [-128])))))
+      (is (thrown? IllegalStateException
+                   (Primitives/readVarint64 (ByteArrayInputStream. (byte-array [-128]))))))))
+
 (deftest primitives-unsigned64
   (testing "unsigned64 uses varint encoding"
     (let [write-read (fn [v]

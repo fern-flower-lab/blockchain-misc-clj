@@ -1,6 +1,5 @@
 package ai.z7.blockchain_misc;
 
-import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -115,21 +114,17 @@ public class TUID {
     }
 
     private static String getProcessID() {
-        Integer pid = null;
+        long pid;
 
         try {
-            String pidJmx = ManagementFactory.getRuntimeMXBean().getName().split("@")[0];
-            pid = Integer.parseInt(pidJmx);
+            pid = ProcessHandle.current().pid();
         } catch (Exception ignored) {
-        }
-
-        if (pid == null) {
             pid = (new Random()).nextInt();
         }
 
         ClassLoader loader = TUID.class.getClassLoader();
         int loaderId = loader != null ? System.identityHashCode(loader) : 0;
-        return Integer.toHexString(pid) + Integer.toHexString(loaderId);
+        return Long.toHexString(pid) + Integer.toHexString(loaderId);
     }
 
     private static long makeNode() {

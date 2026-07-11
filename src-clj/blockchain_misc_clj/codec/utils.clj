@@ -1,6 +1,6 @@
 (ns blockchain-misc-clj.codec.utils
   (:require [clojure.string :as s])
-  (:import (ai.z7.blockchain_misc.UInts UInt256)))
+  (:import (ai.z7.blockchain_misc.UInts UInt)))
 
 (defn byte-count [l]
   (int (Math/ceil (/ (- 64 (Long/numberOfLeadingZeros l)) 8))))
@@ -17,7 +17,7 @@
               (inc i)
               (dec n))))))
 
-(defn long->bytes [l]
+(defn long->bytes ^bytes [l]
   (let [x (byte-count l)
         out (byte-array x)]
     (loop [x (dec x), l l]
@@ -67,27 +67,33 @@
             (aset out (/ i 2) (unchecked-byte (+ (* 0x10 hi) lo)))
             (recur (+ i 2))))))))
 
-(defn hex->bytes [s]
+(defn hex->bytes ^bytes [s]
   (when (nil? s)
     (throw (IllegalArgumentException. "Input string cannot be nil.")))
-  (-> (s/replace s "0x" "")
+  (-> (s/replace-first s #"^0[xX]" "")
       hex-str->bytes))
 
-(defn- print-hex [bs]
-  (let [bs (cond (instance? BigInteger bs) (.toByteArray ^BigInteger bs)
-                 (instance? UInt256 bs) (.toByteArray ^UInt256 bs)
-                 (number? bs) (.toByteArray (biginteger bs))
-                 :else bs)]
-    (-> (bytes->hex-str bs)
-        (s/replace #"^0+" ""))))
+(defn- num->hex [n]
+  (if (instance? UInt n)
+    (.toString ^UInt n 16)
+    (let [b (biginteger n)]
+      (when (neg? b)
+        (throw (IllegalArgumentException. "Negative numbers are not supported.")))
+      (.toString b 16))))
 
 (defn- pad [s opts]
   (let [bs (/ (count s) 2)
         zeroes (* 2 (- (:pad-left opts bs) bs))]
     (str (apply str (repeat zeroes "0")) s)))
 
-(defn bytes->hex [bs & [opts]]
+(defn bytes->hex
+  "Byte arrays render faithfully, two hex chars per byte; numbers (including
+   BigInteger and UInt) render in their minimal representation.
+   {:pad-left n} left-pads the result with zeroes to n bytes."
+  [bs & [opts]]
   (when (nil? bs)
     (throw (IllegalArgumentException. "Input cannot be nil.")))
-  (let [strings (->> bs print-hex s/lower-case)]
-    (pad (apply str strings) opts)))
+  (let [hex (cond (bytes? bs) (bytes->hex-str bs)
+                  (number? bs) (num->hex bs)
+                  :else (throw (IllegalArgumentException. "Unsupported input type.")))]
+    (pad (s/lower-case hex) opts)))

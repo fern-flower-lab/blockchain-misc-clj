@@ -5,8 +5,15 @@ import java.io.ByteArrayOutputStream;
 
 public class Primitives {
 
+    private static int read(final ByteArrayInputStream s) {
+        final int b = s.read();
+        if (b < 0)
+            throw new IllegalStateException("Unexpected end of input.");
+        return b;
+    }
+
     public static boolean readBoolean(final ByteArrayInputStream s) {
-        return s.read() == 1;
+        return read(s) == 1;
     }
 
     public static void writeBoolean(final ByteArrayOutputStream s, final boolean v) {
@@ -14,26 +21,26 @@ public class Primitives {
     }
 
     public static int readVarint32(final ByteArrayInputStream s) {
-        byte tmp = (byte) s.read();
+        byte tmp = (byte) read(s);
         if (0 <= tmp)
             return tmp;
         int out = tmp & 0x7f;
-        if ((tmp = (byte) s.read()) >= 0) {
+        if ((tmp = (byte) read(s)) >= 0) {
             out |= tmp << 7;
         } else {
             out |= (tmp & 0x7f) << 7;
-            if ((tmp = (byte) s.read()) >= 0) {
+            if ((tmp = (byte) read(s)) >= 0) {
                 out |= tmp << 14;
             } else {
                 out |= (tmp & 0x7f) << 14;
-                if ((tmp = (byte) s.read()) >= 0) {
+                if ((tmp = (byte) read(s)) >= 0) {
                     out |= tmp << 21;
                 } else {
                     out |= (tmp & 0x7f) << 21;
-                    out |= (tmp = (byte) s.read()) << 28;
+                    out |= (tmp = (byte) read(s)) << 28;
                     if (tmp < 0) {
                         for (int i = 0; i < 5; i++)
-                            if (0 <= (byte) s.read())
+                            if (0 <= (byte) read(s))
                                 return out;
                         throw new RuntimeException("Invalid varint.");
                     }
@@ -67,7 +74,7 @@ public class Primitives {
         int shift = 0;
         long out = 0;
         while (shift < 64) {
-            final byte b = (byte) s.read();
+            final byte b = (byte) read(s);
             out |= (long) (b & 0x7F) << shift;
             if ((b & 0x80) == 0) {
                 return out;
@@ -149,7 +156,7 @@ public class Primitives {
     }
 
     public static int readFixed32(final ByteArrayInputStream s) {
-        return s.read() | (s.read() << 8) | (s.read() << 16) | (s.read() << 24);
+        return read(s) | (read(s) << 8) | (read(s) << 16) | (read(s) << 24);
     }
 
     public static void writeFixed32(final ByteArrayOutputStream s, final int n) {
@@ -160,14 +167,14 @@ public class Primitives {
     }
 
     public static long readFixed64(final ByteArrayInputStream s) {
-        return (((long) s.read() & 0xff)) |
-                (((long) s.read() & 0xff) << 8) |
-                (((long) s.read() & 0xff) << 16) |
-                (((long) s.read() & 0xff) << 24) |
-                (((long) s.read() & 0xff) << 32) |
-                (((long) s.read() & 0xff) << 40) |
-                (((long) s.read() & 0xff) << 48) |
-                (((long) s.read() & 0xff) << 56);
+        return (((long) read(s) & 0xff)) |
+                (((long) read(s) & 0xff) << 8) |
+                (((long) read(s) & 0xff) << 16) |
+                (((long) read(s) & 0xff) << 24) |
+                (((long) read(s) & 0xff) << 32) |
+                (((long) read(s) & 0xff) << 40) |
+                (((long) read(s) & 0xff) << 48) |
+                (((long) read(s) & 0xff) << 56);
     }
 
     public static void writeFixed64(final ByteArrayOutputStream s, final long n) {

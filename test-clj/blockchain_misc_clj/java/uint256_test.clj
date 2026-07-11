@@ -84,8 +84,8 @@
 (deftest uint256-divmod
   (testing "divmod returns quotient and remainder"
     (let [result (.divmod (UInt256. 7) (UInt256. 3))]
-      (is (= 2 (.longValue (aget result 0))))
-      (is (= 1 (.longValue (aget result 1)))))))
+      (is (= 2 (.longValue ^UInt256 (aget result 0))))
+      (is (= 1 (.longValue ^UInt256 (aget result 1)))))))
 
 (deftest uint256-inc-dec
   (testing "increment"
@@ -225,3 +225,12 @@
     (let [u256 UInt256/MAX_VALUE
           u128 (UInt128. u256)]
       (is (= UInt128/MAX_VALUE u128)))))
+
+;; Constant immutability
+
+(deftest uint256-constants-are-final
+  (testing "shared constants cannot be reassigned"
+    (doseq [field ["ZERO" "ONE" "TWO" "MAX_VALUE"]]
+      (is (java.lang.reflect.Modifier/isFinal
+            (.getModifiers (.getField UInt256 field)))
+          (str "UInt256/" field " must be final")))))

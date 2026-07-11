@@ -15,11 +15,11 @@ public final class UInt128 extends UInt<UInt128> {
     /**
      * Maximum representable value.
      */
-    public static UInt128 MAX_VALUE = new UInt128(Arrays.maxValue(MAX_WIDTH));
+    public static final UInt128 MAX_VALUE = new UInt128(Arrays.maxValue(MAX_WIDTH));
 
-    public static UInt128 ZERO = new UInt128(Arrays.ZERO);
-    public static UInt128 ONE = new UInt128(Arrays.ONE);
-    public static UInt128 TWO = new UInt128(Arrays.TWO);
+    public static final UInt128 ZERO = new UInt128(Arrays.ZERO);
+    public static final UInt128 ONE = new UInt128(Arrays.ONE);
+    public static final UInt128 TWO = new UInt128(Arrays.TWO);
 
     /**
      * Construct from a big-endian {@code int} array.

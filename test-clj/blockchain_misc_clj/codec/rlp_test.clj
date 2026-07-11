@@ -89,7 +89,7 @@
 
 (deftest rlp-decode-single-byte
   (testing "decode single byte"
-    (let [decoded (decode (byte-array [42]))]
+    (let [^bytes decoded (decode (byte-array [42]))]
       (is (= 1 (alength decoded)))
       (is (= 42 (aget decoded 0))))))
 
@@ -97,14 +97,14 @@
   (testing "decode short string"
     (let [original (byte-array [1 2 3])
           encoded (encode original)
-          decoded (decode encoded)]
+          ^bytes decoded (decode encoded)]
       (is (Arrays/equals original decoded)))))
 
 (deftest rlp-decode-long-string
   (testing "decode long string"
     (let [original (byte-array 100 (byte 42))
           encoded (encode original)
-          decoded (decode encoded)]
+          ^bytes decoded (decode encoded)]
       (is (Arrays/equals original decoded)))))
 
 (deftest rlp-decode-vector
@@ -118,15 +118,15 @@
 (deftest rlp-roundtrip
   (testing "encode/decode roundtrip for bytes"
     ;; Note: empty byte array encodes to 0x80 which decodes to nil
-    (doseq [data [(byte-array [0])
-                  (byte-array [127])
-                  (byte-array [128])
-                  (byte-array [1 2 3])
-                  (byte-array 55 (byte 42))
-                  (byte-array 56 (byte 42))
-                  (byte-array 256 (byte 42))]]
+    (doseq [^bytes data [(byte-array [0])
+                         (byte-array [127])
+                         (byte-array [128])
+                         (byte-array [1 2 3])
+                         (byte-array 55 (byte 42))
+                         (byte-array 56 (byte 42))
+                         (byte-array 256 (byte 42))]]
       (let [encoded (encode data)
-            decoded (decode encoded)]
+            ^bytes decoded (decode encoded)]
         (is (Arrays/equals data decoded)))))
   (testing "empty byte array roundtrip"
     (let [encoded (encode (byte-array []))
@@ -163,9 +163,54 @@
   (testing "very long data"
     (let [data (byte-array 10000 (byte 42))
           encoded (encode data)
-          decoded (decode encoded)]
+          ^bytes decoded (decode encoded)]
       (is (Arrays/equals data decoded)))))
 
 (deftest rlp-decode-nil-input
   (testing "decode throws on nil input"
     (is (thrown? Exception (decode nil)))))
+
+(deftest rlp-decode-empty-input
+  (testing "decode throws on empty input"
+    (is (thrown? Exception (decode (byte-array []))))))
+
+(deftest rlp-empty-vector-roundtrip
+  (testing "empty vector decodes back to an empty vector, not nil"
+    (is (= [] (decode (encode []))))
+    (is (= [] (decode (byte-array [0xc0]))))))
+
+(deftest rlp-string-utf8
+  (testing "strings encode as UTF-8 regardless of platform charset"
+    (let [s "héllo中文"
+          payload ^bytes (decode (encode s))]
+      (is (Arrays/equals (.getBytes s java.nio.charset.StandardCharsets/UTF_8) payload))
+      (is (= s (String. payload java.nio.charset.StandardCharsets/UTF_8))))))
+
+(deftest rlp-decode-truncated
+  (testing "decode throws on truncated input instead of fabricating zero bytes"
+    ;; claims 3 payload bytes, only 2 present
+    (is (thrown? clojure.lang.ExceptionInfo (decode (byte-array [0x83 1 2]))))
+    ;; long form claims 256 payload bytes, none present
+    (is (thrown? clojure.lang.ExceptionInfo (decode (byte-array [0xb9 0x01 0x00]))))
+    ;; length-of-length bytes themselves missing
+    (is (thrown? clojure.lang.ExceptionInfo (decode (byte-array [0xb9 0x01]))))
+    ;; vector element claims more bytes than the payload holds
+    (is (thrown? clojure.lang.ExceptionInfo (decode (byte-array [0xc2 0x82 0x01]))))))
+
+(deftest rlp-decode-non-canonical
+  (testing "single byte below 0x80 must be encoded as itself"
+    (is (thrown? clojure.lang.ExceptionInfo (decode (byte-array [0x81 0x05])))))
+  (testing "a prefixed byte >= 0x80 is canonical and accepted"
+    (is (= 1 (alength ^bytes (decode (byte-array [0x81 0x80]))))))
+  (testing "long form must not be used for lengths <= 55"
+    (is (thrown? clojure.lang.ExceptionInfo
+                 (decode (byte-array (into [0xb8 0x03] (repeat 3 1)))))))
+  (testing "length bytes must not have leading zeros"
+    (is (thrown? clojure.lang.ExceptionInfo
+                 (decode (byte-array (into [0xb9 0x00 0x38] (repeat 56 1))))))))
+
+(deftest rlp-decode-trailing-bytes
+  (testing "decode throws when input has bytes after the first item"
+    (is (thrown? clojure.lang.ExceptionInfo (decode (byte-array [0x01 0x02]))))
+    (is (thrown? clojure.lang.ExceptionInfo (decode (byte-array [0x80 0x00]))))
+    (is (thrown? clojure.lang.ExceptionInfo (decode (byte-array [0xc2 1 2 3]))))))

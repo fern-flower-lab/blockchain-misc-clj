@@ -15,11 +15,11 @@ public final class UInt256 extends UInt<UInt256> {
     /**
      * Maximum representable value.
      */
-    public static UInt256 MAX_VALUE = new UInt256(Arrays.maxValue(MAX_WIDTH));
+    public static final UInt256 MAX_VALUE = new UInt256(Arrays.maxValue(MAX_WIDTH));
 
-    public static UInt256 ZERO = new UInt256(Arrays.ZERO);
-    public static UInt256 ONE = new UInt256(Arrays.ONE);
-    public static UInt256 TWO = new UInt256(Arrays.TWO);
+    public static final UInt256 ZERO = new UInt256(Arrays.ZERO);
+    public static final UInt256 ONE = new UInt256(Arrays.ONE);
+    public static final UInt256 TWO = new UInt256(Arrays.TWO);
 
     /**
      * Construct from a big-endian {@code int} array.

@@ -9,10 +9,8 @@
  :freebsd  {}
  :openbsd  {}
 
- :provided {:source-paths      ["src-clj"]
-            :java-source-paths ["src-java"]
-            :test-paths        ["test-clj"]
-            :javac-options     ["-source" "9" "-target" "9" "-g:none"]
-            :jar-exclusions    [#"\.java"]}
+ ;; Source/test paths now live in project.clj; this stays so
+ ;; `lein with-profile +provided ...` invocations keep working.
+ :provided {}
 
  :aliases  {}}

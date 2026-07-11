@@ -86,8 +86,8 @@
 (deftest uint128-divmod
   (testing "divmod returns quotient and remainder"
     (let [result (.divmod (UInt128. 7) (UInt128. 3))]
-      (is (= 2 (.longValue (aget result 0))))
-      (is (= 1 (.longValue (aget result 1)))))))
+      (is (= 2 (.longValue ^UInt128 (aget result 0))))
+      (is (= 1 (.longValue ^UInt128 (aget result 1)))))))
 
 (deftest uint128-inc-dec
   (testing "increment"
@@ -201,3 +201,12 @@
 (deftest uint128-mulmod
   (testing "mulmod operation"
     (is (= 2 (.longValue (.mulmod (UInt128. 4) (UInt128. 5) (UInt128. 6)))))))
+
+;; Constant immutability
+
+(deftest uint128-constants-are-final
+  (testing "shared constants cannot be reassigned"
+    (doseq [field ["ZERO" "ONE" "TWO" "MAX_VALUE"]]
+      (is (java.lang.reflect.Modifier/isFinal
+            (.getModifiers (.getField UInt128 field)))
+          (str "UInt128/" field " must be final")))))

@@ -2,10 +2,9 @@
   (:require [jsonista.core :as j]
             [clojure.string :as str])
   (:import (ai.z7.blockchain_misc.Binary Bson)
-           (potemkin PersistentMapProxy$IMap)
-           (clojure.lang PersistentHashMap)))
+           (de.undercouch.bson4jackson BsonFactory)))
 
-(defn encode ^bytes [^PersistentMapProxy$IMap m]
+(defn encode ^bytes [m]
   (when (nil? m)
     (throw (IllegalArgumentException. "Input map cannot be nil.")))
   (when-not (map? m)
@@ -18,11 +17,13 @@
 (defn- keywordize [v]
   (keyword
     (if (and (string? v) (str/starts-with? v ":"))
-      (str/replace-first v ":" "") v)))
+      (subs v 1) v)))
 
-(defn- convert [m]
-  (j/read-value (j/write-value-as-bytes m)
-                (j/object-mapper {:decode-key-fn keywordize})))
+(def ^:private bson-mapper
+  (j/object-mapper {:factory       (BsonFactory.)
+                    :decode-key-fn keywordize}))
 
-(defn decode ^PersistentHashMap [^bytes b]
-  (-> b decode* convert))
+(defn decode [^bytes b]
+  (when (nil? b)
+    (throw (IllegalArgumentException. "Input bytes cannot be nil.")))
+  (j/read-value b bson-mapper))

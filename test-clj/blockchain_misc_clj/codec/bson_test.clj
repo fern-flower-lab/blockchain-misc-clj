@@ -1,6 +1,6 @@
 (ns blockchain-misc-clj.codec.bson-test
   (:require [clojure.test :refer [deftest testing is]]
-            [blockchain-misc-clj.codec.bson :refer [encode decode]]))
+            [blockchain-misc-clj.codec.bson :refer [encode decode decode*]]))
 
 ;; Basic encode/decode roundtrip
 
@@ -120,3 +120,15 @@
     ;; BSON decoder handles short/malformed input gracefully
     (let [result (decode (byte-array [5 0 0 0 0]))]  ; minimal valid BSON (empty document)
       (is (= {} result)))))
+
+(deftest bson-decode-corrupt
+  (testing "decode throws on corrupt input instead of silently returning nil"
+    (is (thrown? Exception (decode (byte-array [1 2 3]))))
+    (is (thrown? Exception (decode* (byte-array [1 2 3]))))))
+
+(deftest bson-binary-values
+  (testing "byte-array values survive a roundtrip as bytes, not base64 strings"
+    (let [m {:data (byte-array [1 2 3 -1])}
+          decoded (decode (encode m))]
+      (is (bytes? (:data decoded)))
+      (is (java.util.Arrays/equals (byte-array [1 2 3 -1]) ^bytes (:data decoded))))))

@@ -59,7 +59,14 @@
     (is (java.util.Arrays/equals (byte-array [1 2 3]) (hex->bytes "010203"))))
   (testing "hex->bytes handles 0x prefix"
     (is (java.util.Arrays/equals (byte-array [1 2 3]) (hex->bytes "0x010203")))
-    (is (java.util.Arrays/equals (byte-array [-1]) (hex->bytes "0xFF")))))
+    (is (java.util.Arrays/equals (byte-array [-1]) (hex->bytes "0xFF")))
+    (is (java.util.Arrays/equals (byte-array [-1]) (hex->bytes "0XFF")))
+    (is (java.util.Arrays/equals (byte-array []) (hex->bytes "0x")))))
+
+(deftest hex->bytes-prefix-only-at-start
+  (testing "0x is only stripped as a prefix, not inside the string"
+    (is (thrown? IllegalArgumentException (hex->bytes "de0xad")))
+    (is (thrown? IllegalArgumentException (hex->bytes "0x0x")))))
 
 (deftest hex->bytes-validation
   (testing "hex->bytes throws on odd-length strings"
@@ -77,13 +84,15 @@
 ;; bytes->hex tests
 
 (deftest bytes->hex-tests
-  (testing "bytes->hex converts byte arrays to hex"
+  (testing "bytes->hex is faithful for byte arrays: two chars per byte"
     (is (= "" (bytes->hex (byte-array []))))
-    (is (= "1" (bytes->hex (byte-array [1]))))
+    (is (= "01" (bytes->hex (byte-array [1]))))
     (is (= "ff" (bytes->hex (byte-array [-1]))))
-    (is (= "10203" (bytes->hex (byte-array [1 2 3])))))
-  (testing "bytes->hex strips leading zeros"
-    (is (= "1" (bytes->hex (byte-array [0 0 1]))))))
+    (is (= "010203" (bytes->hex (byte-array [1 2 3])))))
+  (testing "bytes->hex preserves leading zero bytes"
+    (is (= "000001" (bytes->hex (byte-array [0 0 1]))))
+    (is (= "00" (bytes->hex (byte-array [0]))))
+    (is (= "0000" (bytes->hex (byte-array [0 0]))))))
 
 (deftest bytes->hex-with-padding
   (testing "bytes->hex respects pad-left option"
@@ -105,8 +114,24 @@
     (is (= "7b" (bytes->hex 123)))
     (is (= "ffffffff" (bytes->hex 4294967295)))))
 
+(deftest bytes->hex-negative-numbers
+  (testing "negative numbers throw instead of producing garbage"
+    (is (thrown? IllegalArgumentException (bytes->hex -1)))
+    (is (thrown? IllegalArgumentException (bytes->hex (BigInteger. "-123"))))))
+
+(deftest bytes->hex-zero-values
+  (testing "zero renders as \"0\" for numbers, not an empty string"
+    (is (= "0" (bytes->hex 0)))
+    (is (= "0" (bytes->hex BigInteger/ZERO)))
+    (is (= "0" (bytes->hex (UInt256. 0))))))
+
 (deftest hex-roundtrip
-  (testing "hex->bytes and bytes->hex roundtrip"
-    (doseq [hex ["01" "ff" "0102030405060708"]]
-      (let [bs (hex->bytes hex)]
-        (is (= hex (bytes->hex bs {:pad-left (/ (count hex) 2)})))))))
+  (testing "hex->bytes and bytes->hex roundtrip without padding hints"
+    (doseq [hex ["01" "ff" "00ff" "0001" "0102030405060708"]]
+      (is (= hex (bytes->hex (hex->bytes hex))))))
+  (testing "byte arrays survive a hex roundtrip unchanged"
+    (doseq [bs [(byte-array [0])
+                (byte-array [0 0 1])
+                (byte-array [1 2 3])
+                (byte-array [16 0 0])]]
+      (is (java.util.Arrays/equals ^bytes bs ^bytes (hex->bytes (bytes->hex bs)))))))
